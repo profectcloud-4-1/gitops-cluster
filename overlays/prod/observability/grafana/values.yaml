@@ -1,0 +1,39 @@
+fullnameOverride: grafana
+
+adminPassword: "1234"
+
+env:
+  GF_SERVER_ROOT_URL: "%(protocol)s://%(domain)s/grafana"
+  GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+
+persistence:
+  enabled: false
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: Loki
+        type: loki
+        access: proxy
+        url: "http://loki-gateway:80"
+        isDefault: false
+
+      - name: Tempo
+        type: tempo
+        access: proxy
+        url: "http://tempo:3200"
+        isDefault: false
+
+      - name: Mimir
+        type: prometheus
+        access: proxy
+        url: "http://mimir:9009"
+        isDefault: false

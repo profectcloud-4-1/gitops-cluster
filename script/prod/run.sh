@@ -60,9 +60,17 @@ kubectl apply -f base/namespace
 # Mimir
 kustomize build overlays/prod/observability/backend | kubectl apply -f - || true
 
-
-
-
+#
+# Grafana
+#
+helm upgrade --install grafana grafana/grafana \
+  --namespace observability \
+  --create-namespace=false \
+  --version 10.3.0 \
+  --wait --timeout 180s \
+  --atomic \
+  -f overlays/prod/observability/grafana/values.yaml
+  
 #
 # OTel Collector (뒷단)
 #
@@ -71,9 +79,6 @@ kustomize build overlays/prod/observability/backend | kubectl apply -f - || true
 # OTel Collector (앞단)
 #
 
-#
-# Grafana
-#
 
 
 
