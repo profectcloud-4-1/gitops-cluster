@@ -1,4 +1,7 @@
+#!/bin/bash
+
 kubectl apply -f base/namespace
+
 
 # 
 # ESO
@@ -58,19 +61,19 @@ kubectl apply -f base/namespace
 #   -f overlays/prod/observability/backend/loki/values.yaml
 
 # Mimir
-kustomize build overlays/prod/observability/backend | kubectl apply -f - || true
+# kustomize build overlays/prod/observability/backend | kubectl apply -f - || true
 
 #
 # Grafana
 #
-helm upgrade --install grafana grafana/grafana \
-  --namespace observability \
-  --create-namespace=false \
-  --version 10.3.0 \
-  --wait --timeout 180s \
-  --atomic \
-  -f overlays/prod/observability/grafana/values.yaml
-  
+# helm upgrade --install grafana grafana/grafana \
+#   --namespace observability \
+#   --create-namespace=false \
+#   --version 10.3.0 \
+#   --wait --timeout 180s \
+#   --atomic \
+#   -f overlays/prod/observability/grafana/values.yaml
+
 #
 # OTel Collector (뒷단)
 #
@@ -79,9 +82,32 @@ helm upgrade --install grafana grafana/grafana \
 # OTel Collector (앞단)
 #
 
-
-
-
 #
 # Ingress
+#
+
+# SA
+# kubectl apply -f overlays/prod/ingress/sa/sa.yaml || true
+
+# Ingress Controller
+# helm repo add eks https://aws.github.io/eks-charts
+# helm repo update
+
+# VPC_ID=$(./script/shared/get_vpc_id.sh)
+# echo "VPC_ID: $VPC_ID"
+
+# helm upgrade --install aws-load-balancer-controller eks/aws-load-balancer-controller \
+#   --namespace kube-system \
+#   --create-namespace=false \
+#   --version 1.16.0 \
+#   --wait --timeout 5m \
+#   --atomic \
+#   --set vpcId=$VPC_ID \
+#   -f overlays/prod/ingress/ingress-controller/values.yaml
+
+# Ingress
+# kustomize build overlays/prod/ingress | kubectl apply -f - || true
+
+#
+# ArgoCD & AppliationSet
 #

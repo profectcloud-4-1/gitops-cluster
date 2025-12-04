@@ -1,0 +1,6 @@
+clusterName: "goorm"
+region: "ap-northeast-2"
+
+serviceAccount:
+  create: false
+  name: "aws-load-balancer-controller"
