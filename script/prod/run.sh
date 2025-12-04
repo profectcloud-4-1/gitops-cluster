@@ -111,3 +111,13 @@ kubectl apply -f base/namespace
 #
 # ArgoCD & AppliationSet
 #
+# helm repo add argo https://argoproj.github.io/argo-helm
+# helm repo update
+# helm upgrade --install argocd argo/argo-cd \
+#   --namespace argocd \
+#   --create-namespace=false \
+#   --version 9.1.6 \
+#   --wait --timeout 180s
+
+# ApplicationSet
+# kustomize build overlays/prod/argocd/msa | kubectl apply -f - || true
