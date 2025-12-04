@@ -22,17 +22,20 @@ kubectl apply -f base/namespace
 # 
 # OTel Operator
 # 
-helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
-helm upgrade --install otel-operator open-telemetry/opentelemetry-operator \
-  --namespace observability \
-  --set "manager.collectorImage.repository=otel/opentelemetry-collector-k8s" \
-  --set admissionWebhooks.certManager.enabled=false \
-  --set admissionWebhooks.autoGenerateCert.enabled=true \
-  --wait --timeout=180s
+# helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
+# helm upgrade --install otel-operator open-telemetry/opentelemetry-operator \
+#   --namespace observability \
+#   --set "manager.collectorImage.repository=otel/opentelemetry-collector-k8s" \
+#   --set admissionWebhooks.certManager.enabled=false \
+#   --set admissionWebhooks.autoGenerateCert.enabled=true \
+#   --wait --timeout=180s
 
 #
 # Telemetry Backend
 #
+
+# SA
+kustomize build overlays/prod/observability/backend/sa | kubectl apply -f - || true
 
 
 

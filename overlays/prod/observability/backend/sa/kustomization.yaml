@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: observability
+
+resources:
+  - ../../../../../base/observability/backend/sa
+
+patches:
+  - path: sa-log.yaml
+    target:
+      kind: ServiceAccount
+      name: goormdotcom-log
+  - path: sa-metric.yaml
+    target:
+      kind: ServiceAccount
+      name: goormdotcom-metric
+  - path: sa-trace.yaml
+    target:
+      kind: ServiceAccount
+      name: goormdotcom-trace
