@@ -1,0 +1,30 @@
+serviceAccount:
+  create: false
+  name: goormdotcom-trace
+
+distributor:
+  replicaCount: 1
+
+ingester:
+  replicaCount: 1
+
+querier:
+  replicaCount: 1
+
+queryFrontend:
+  replicaCount: 1
+
+compactor:
+  replicaCount: 1
+
+tempo:
+  metricsGenerator:
+    enabled: false
+  storage:
+    trace:
+      backend: s3
+      s3:
+        bucket: goormdotcom-trace
+        region: ap-northeast-2
+        endpoint: "s3.ap-northeast-2.amazonaws.com"
+        forcepathstyle: true

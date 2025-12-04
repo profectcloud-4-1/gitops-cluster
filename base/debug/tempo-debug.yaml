@@ -1,0 +1,19 @@
+# NOTE: Tempo 비정상종료 시, 디버깅용 파드 생성/접속하여 문제 진단
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tempo-debug
+  namespace: observability
+spec:
+  serviceAccountName: goormdotcom-trace # Tempo와 동일 SA
+  containers:
+    - name: awscli
+      image: amazon/aws-cli:2.15.30
+      command: ["sleep", "3600"]
+      env:
+        - name: AWS_REGION
+          value: ap-northeast-2
+        - name: AWS_DEFAULT_REGION
+          value: ap-northeast-2
+  restartPolicy: Never

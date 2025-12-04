@@ -4,7 +4,7 @@ kind: Kustomization
 namespace: observability
 
 resources:
-  - ../../../../../base/observability/backend/sa
+  - ../../../../base/observability/sa
 
 patches:
   - path: sa-log.yaml

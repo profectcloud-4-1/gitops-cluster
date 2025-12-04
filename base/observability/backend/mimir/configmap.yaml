@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mimir-config
+  namespace: observability
+data:
+  config.yaml: |
+    multitenancy_enabled: false
+
+    server:
+      http_listen_port: 9009
+
+    blocks_storage:
+      backend: s3
+      storage_prefix: blocks
+      s3:
+        bucket_name: goormdotcom-metric
+        region: ap-northeast-2
+        endpoint: s3.ap-northeast-2.amazonaws.com
+
+    ruler_storage:
+      backend: s3
+      storage_prefix: rules
+      s3:
+        bucket_name: goormdotcom-metric
+        region: ap-northeast-2
+        endpoint: s3.ap-northeast-2.amazonaws.com
+
+    alertmanager_storage:
+      backend: s3
+      storage_prefix: alerts
+      s3:
+        bucket_name: goormdotcom-metric
+        region: ap-northeast-2
+        endpoint: s3.ap-northeast-2.amazonaws.com
+
+    ingester:
+      ring:
+        kvstore:
+          store: inmemory
+        replication_factor: 1
+
+    activity_tracker:
+      filepath: /data/metrics-activity.log
+
+    ruler:
+      rule_path: /data/rules

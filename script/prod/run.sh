@@ -35,7 +35,31 @@ kubectl apply -f base/namespace
 #
 
 # SA
-kustomize build overlays/prod/observability/backend/sa | kubectl apply -f - || true
+# kustomize build overlays/prod/observability/sa | kubectl apply -f - || true
+
+# Tempo
+# helm repo add grafana https://grafana.github.io/helm-charts
+# helm repo update
+# helm upgrade --install tempo grafana/tempo \
+#   --namespace observability \
+#   --create-namespace=false \
+#   --version 1.10.0 \
+#   --wait --timeout 180s \
+#   --atomic \
+#   -f overlays/prod/observability/backend/tempo/values.yaml
+
+# Loki
+# helm upgrade --install loki grafana/loki \
+#   --namespace observability \
+#   --create-namespace=false \
+#   --version 6.46.0 \
+#   --wait --timeout 180s \
+#   --atomic \
+#   -f overlays/prod/observability/backend/loki/values.yaml
+
+# Mimir
+kustomize build overlays/prod/observability/backend | kubectl apply -f - || true
+
 
 
 
