@@ -77,10 +77,16 @@ kubectl apply -f base/namespace
 #
 # OTel Collector (뒷단)
 #
+# kustomize build overlays/prod/observability/collector/secret | kubectl apply -f - || true
+# kustomize build overlays/prod/observability/collector/consumer | kubectl apply -f - || true
+
 
 #
 # OTel Collector (앞단)
 #
+kubectl apply -f base/observability/collector/producer/serviceaccount.yaml || true
+kubectl apply -f base/observability/collector/producer/rbac.yaml || true
+kubectl apply -f base/observability/collector/producer/otel-collector.yaml || true
 
 #
 # Ingress

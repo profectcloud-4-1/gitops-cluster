@@ -1,0 +1,47 @@
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: otel-gateway-traces
+  namespace: observability
+spec:
+  mode: deployment
+  image: otel/opentelemetry-collector-contrib:0.112.0
+  replicas: 1
+
+  envFrom:
+    - secretRef:
+        name: otel-collector-config
+
+  config:
+    receivers:
+      kafka/traces:
+        brokers: "${env:KAFKA_BROKERS}"
+        topic: "${env:KAFKA_TRACES_TOPIC}"
+        protocol_version: 2.0.0
+        encoding: "otlp_proto"
+        group_id: "${env:KAFKA_TRACES_GROUP_ID}"
+        auth:
+          tls:
+            insecure_skip_verify: true
+          sasl:
+            mechanism: "SCRAM-SHA-512"
+            username: "${env:KAFKA_USERNAME}"
+            password: "${env:KAFKA_PASSWORD}"
+
+    processors:
+      batch:
+        timeout: 1s
+        send_batch_size: 8192
+
+    exporters:
+      otlp/tempo:
+        endpoint: "tempo:4317"
+        tls:
+          insecure: true
+
+    service:
+      pipelines:
+        traces:
+          receivers: [kafka/traces]
+          processors: [batch]
+          exporters: [otlp/tempo]

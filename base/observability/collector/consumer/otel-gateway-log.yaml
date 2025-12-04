@@ -1,0 +1,56 @@
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: otel-gateway-logs
+  namespace: observability
+spec:
+  mode: deployment
+  image: otel/opentelemetry-collector-contrib:0.112.0
+  replicas: 1
+
+  envFrom:
+    - secretRef:
+        name: otel-collector-config
+
+  config:
+    receivers:
+      kafka/logs:
+        brokers: "${env:KAFKA_BROKERS}"
+        topic: "${env:KAFKA_LOGS_TOPIC}"
+        protocol_version: 2.0.0
+        encoding: "otlp_proto"
+        group_id: "${env:KAFKA_LOGS_GROUP_ID}"
+        #message_marking:
+        #  after: true #파이프라인이 끝난 뒤 메시지 마킹(Kafka receiver에서 batch 사용하면 배치큐에 넣는것까지만)
+        #  on_error: false #일시적 오류일 때 메시지 마킹 안함->retry+backoff
+        #  on_permanet_error: true #영구 에러면 마킹하고 지나감, 대신 DLQ로 전송해야 함
+        #  autocommit:
+        #    enable: true #내부적으로 일정 주기마다 한번에 commit->성능 중시, 약간의 중복 처리 허용
+        #    internal: 5s # commit 주기
+        auth:
+          tls:
+            insecure_skip_verify: true
+          sasl:
+            mechanism: "SCRAM-SHA-512"
+            username: "${env:KAFKA_USERNAME}"
+            password: "${env:KAFKA_PASSWORD}"
+
+    processors:
+      batch:
+        timeout: 1s
+        send_batch_size: 8192
+
+    exporters:
+      otlphttp/loki:
+        logs_endpoint: "http://loki:3100/loki/api/v1/push"
+        tls:
+          insecure: true
+        headers:
+          X-Scope-OrgID: "goormdotcom"
+
+    service:
+      pipelines:
+        logs:
+          receivers: [kafka/logs]
+          processors: [batch]
+          exporters: [otlphttp/loki]

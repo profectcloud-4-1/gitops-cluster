@@ -1,0 +1,49 @@
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: otel-gateway-metrics
+  namespace: observability
+spec:
+  mode: deployment
+  image: otel/opentelemetry-collector-contrib:0.112.0
+  replicas: 1
+
+  envFrom:
+    - secretRef:
+        name: otel-collector-config
+
+  config:
+    receivers:
+      kafka/metrics:
+        brokers: "${env:KAFKA_BROKERS}"
+        topic: "${env:KAFKA_METRICS_TOPIC}"
+        protocol_version: 2.0.0
+        encoding: "otlp_proto"
+        group_id: "${env:KAFKA_METRICS_GROUP_ID}"
+        auth:
+          tls:
+            insecure_skip_verify: true
+          sasl:
+            mechanism: "SCRAM-SHA-512"
+            username: "${env:KAFKA_USERNAME}"
+            password: "${env:KAFKA_PASSWORD}"
+
+    processors:
+      batch:
+        timeout: 1s
+        send_batch_size: 8192
+
+    exporters:
+      otlphttp/mimir:
+        metrics_endpoint: "http://mimir:9009/otlp/v1/metrics"
+        tls:
+          insecure: true
+        headers:
+          X-Scope-OrgID: "goormdotcom"
+
+    service:
+      pipelines:
+        metrics:
+          receivers: [kafka/metrics]
+          processors: [batch]
+          exporters: [otlphttp/mimir]

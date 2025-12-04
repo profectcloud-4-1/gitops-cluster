@@ -1,0 +1,165 @@
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: otel-collector
+  namespace: observability
+spec:
+  mode: daemonset
+  image: otel/opentelemetry-collector-contrib
+
+  serviceAccount: otel-collector-producer
+
+  hostNetwork: true
+
+  envFrom:
+    - secretRef:
+        name: otel-collector-config
+
+  resources:
+    limits:
+      cpu: 300m
+      memory: 512Mi
+
+  nodeSelector:
+    kubernetes.io/os: linux
+
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+    - key: node-role.kubernetes.io/master
+      operator: Exists
+      effect: NoSchedule
+
+  # host filesystem 마운트 (호스트레벨 메트릭 수집을 위해)
+  volumeMounts:
+    - name: hostfs
+      mountPath: /hostfs
+      readOnly: true
+
+  volumes:
+    - name: hostfs
+      hostPath:
+        path: /
+        type: Directory
+
+  #######################################################################
+  # CONFIG
+  #######################################################################
+  config:
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+
+      kubeletstats:
+        collection_interval: 30s
+        auth_type: serviceAccount
+        endpoint: "https://${env:HOST_IP}:10250"
+        insecure_skip_verify: true
+        metric_groups:
+          - node
+          - pod
+          - container
+
+      hostmetrics:
+        root_path: /hostfs
+        collection_interval: 30s
+        scrapers:
+          cpu: {}
+          memory: {}
+          disk: {}
+          filesystem: {}
+          network: {}
+
+    processors:
+      memory_limiter:
+        check_interval: 5s
+        limit_percentage: 80
+        spike_limit_percentage: 25
+
+      batch:
+        timeout: 5s
+        send_batch_size: 2048
+
+      groupbytrace:
+        wait_duration: 10s
+        num_traces: 10000
+
+      tail_sampling:
+        decision_wait: 10s
+        num_traces: 10000
+        expected_new_traces_per_sec: 100
+        policies:
+          - name: error-traces
+            type: status_code
+            status_code:
+              status_codes: [ERROR]
+          - name: normal-traces
+            type: probabilistic
+            probabilistic:
+              sampling_percentage: 5
+
+      resource:
+        attributes:
+          - key: k8s.cluster.name
+            action: upsert
+            value: "k8s-cluster-local" #임시
+
+    exporters:
+      kafka/logs:
+        brokers: "${env:KAFKA_BROKERS}"
+        topic: "${env:KAFKA_LOGS_TOPIC}"
+        auth:
+          tls:
+            insecure_skip_verify: true
+          sasl:
+            mechanism: "SCRAM-SHA-512"
+            username: "${env:KAFKA_USERNAME}"
+            password: "${env:KAFKA_PASSWORD}"
+
+      kafka/metrics:
+        brokers: "${env:KAFKA_BROKERS}"
+        topic: "${env:KAFKA_METRICS_TOPIC}"
+        auth:
+          tls:
+            insecure_skip_verify: true
+          sasl:
+            mechanism: "SCRAM-SHA-512"
+            username: "${env:KAFKA_USERNAME}"
+            password: "${env:KAFKA_PASSWORD}"
+
+      kafka/traces:
+        brokers: "${env:KAFKA_BROKERS}"
+        topic: "${env:KAFKA_TRACES_TOPIC}"
+        auth:
+          tls:
+            insecure_skip_verify: true
+          sasl:
+            mechanism: "SCRAM-SHA-512"
+            username: "${env:KAFKA_USERNAME}"
+            password: "${env:KAFKA_PASSWORD}"
+
+      debug:
+        verbosity: normal
+
+    service:
+      pipelines:
+        logs:
+          receivers: [otlp]
+          processors: [memory_limiter, batch, resource]
+          exporters: [kafka/logs, debug]
+
+        metrics:
+          receivers: [otlp, kubeletstats, hostmetrics]
+          processors: [memory_limiter, batch, resource]
+          exporters: [kafka/metrics, debug]
+
+        traces:
+          receivers: [otlp]
+          processors:
+            [memory_limiter, groupbytrace, tail_sampling, batch, resource]
+          exporters: [kafka/traces, debug]
