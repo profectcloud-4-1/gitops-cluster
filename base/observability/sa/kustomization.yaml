@@ -7,3 +7,4 @@ resources:
   - sa-log.yaml
   - sa-metric.yaml
   - sa-trace.yaml
+  - sa-grafana.yaml

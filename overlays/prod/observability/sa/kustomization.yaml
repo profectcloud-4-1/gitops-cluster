@@ -19,3 +19,7 @@ patches:
     target:
       kind: ServiceAccount
       name: goormdotcom-trace
+  - path: sa-grafana.yaml
+    target:
+      kind: ServiceAccount
+      name: goormdotcom-grafana

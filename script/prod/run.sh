@@ -38,7 +38,7 @@ kubectl apply -f base/namespace
 #
 
 # SA
-# kustomize build overlays/prod/observability/sa | kubectl apply -f - || true
+kustomize build overlays/prod/observability/sa | kubectl apply -f - || true
 
 # Tempo
 # helm repo add grafana https://grafana.github.io/helm-charts
@@ -52,13 +52,13 @@ kubectl apply -f base/namespace
 #   -f overlays/prod/observability/backend/tempo/values.yaml
 
 # Loki
-helm upgrade --install loki grafana/loki \
-  --namespace observability \
-  --create-namespace=false \
-  --version 6.46.0 \
-  --wait --timeout 180s \
-  --atomic \
-  -f overlays/prod/observability/backend/loki/values.yaml
+# helm upgrade --install loki grafana/loki \
+#   --namespace observability \
+#   --create-namespace=false \
+#   --version 6.46.0 \
+#   --wait --timeout 180s \
+#   --atomic \
+#   -f overlays/prod/observability/backend/loki/values.yaml
 
 # Mimir
 # kustomize build overlays/prod/observability/backend | kubectl apply -f - || true
@@ -66,13 +66,13 @@ helm upgrade --install loki grafana/loki \
 #
 # Grafana
 #
-# helm upgrade --install grafana grafana/grafana \
-#   --namespace observability \
-#   --create-namespace=false \
-#   --version 10.3.0 \
-#   --wait --timeout 180s \
-#   --atomic \
-#   -f overlays/prod/observability/grafana/values.yaml
+helm upgrade --install grafana grafana/grafana \
+  --namespace observability \
+  --create-namespace=false \
+  --version 10.3.0 \
+  --wait --timeout 180s \
+  --atomic \
+  -f overlays/prod/observability/grafana/values.yaml
 
 #
 # OTel Collector (뒷단)

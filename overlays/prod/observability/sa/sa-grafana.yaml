@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: goormdotcom-grafana
+  namespace: observability
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::803733722005:role/eks-irsa-grafana-cloudwatch

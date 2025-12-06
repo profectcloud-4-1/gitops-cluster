@@ -2,6 +2,10 @@ fullnameOverride: grafana
 
 adminPassword: "1234"
 
+serviceAccount:
+  create: false
+  name: goormdotcom-grafana
+
 env:
   GF_SERVER_ROOT_URL: "%(protocol)s://%(domain)s/grafana"
   GF_SERVER_SERVE_FROM_SUB_PATH: "true"
@@ -48,3 +52,13 @@ datasources:
           httpHeaderName1: "X-Scope-OrgID"
         secureJsonData:
           httpHeaderValue1: "goormdotcom"
+
+      - name: CloudWatch
+        type: cloudwatch
+        uid: cloudwatch-datasource
+        access: proxy
+        isDefault: false
+        jsonData:
+          defaultRegion: ap-northeast-2
+          authType: default # AWS SDK Default(=IRSA 사용)
+        secureJsonData: {}
