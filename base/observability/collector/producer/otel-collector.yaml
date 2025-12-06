@@ -15,6 +15,12 @@ spec:
     - secretRef:
         name: otel-collector-config
 
+  env:
+    - name: K8S_NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
+
   resources:
     limits:
       cpu: 300m
@@ -103,11 +109,11 @@ spec:
             probabilistic:
               sampling_percentage: 5
 
-      resource:
-        attributes:
-          - key: k8s.cluster.name
+      attributes/node:
+        actions:
+          - key: k8s.node.name
             action: upsert
-            value: "k8s-cluster-local" #임시
+            value: "${env:K8S_NODE_NAME}"
 
     exporters:
       kafka/logs:
@@ -150,16 +156,22 @@ spec:
       pipelines:
         logs:
           receivers: [otlp]
-          processors: [memory_limiter, batch, resource]
+          processors: [memory_limiter, attributes/node, batch]
           exporters: [kafka/logs, debug]
 
         metrics:
           receivers: [otlp, kubeletstats, hostmetrics]
-          processors: [memory_limiter, batch, resource]
+          processors: [memory_limiter, attributes/node, batch]
           exporters: [kafka/metrics, debug]
 
         traces:
           receivers: [otlp]
           processors:
-            [memory_limiter, groupbytrace, tail_sampling, batch, resource]
+            [
+              memory_limiter,
+              attributes/node,
+              groupbytrace,
+              tail_sampling,
+              batch,
+            ]
           exporters: [kafka/traces, debug]
