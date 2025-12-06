@@ -107,13 +107,26 @@ spec:
           - name: normal-traces
             type: probabilistic
             probabilistic:
-              sampling_percentage: 5
+              # 모든 트레이스 수집 (FIXME: 부하 걸 때는 조정할 것!!)
+              sampling_percentage: 100
 
       attributes/node:
         actions:
           - key: k8s.node.name
             action: upsert
             value: "${env:K8S_NODE_NAME}"
+
+      # 헬스체크 트레이스 제외
+      filter/trace-healthcheck:
+        traces:
+          span:
+            - attributes["http.route"] == "/actuator/health"
+
+      # DB 헬스체크 트레이스 제외
+      filter/trace-db-healthcheck:
+        traces:
+          span:
+            - 'IsMatch(attributes["thread.name"], ".*housekeeper.*") == true'
 
     exporters:
       kafka/logs:
@@ -162,13 +175,15 @@ spec:
         metrics:
           receivers: [otlp, kubeletstats, hostmetrics]
           processors: [memory_limiter, attributes/node, batch]
-          exporters: [kafka/metrics, debug]
+          exporters: [kafka/metrics]
 
         traces:
           receivers: [otlp]
           processors:
             [
               memory_limiter,
+              filter/trace-healthcheck,
+              filter/trace-db-healthcheck,
               attributes/node,
               groupbytrace,
               tail_sampling,
