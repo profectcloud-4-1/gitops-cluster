@@ -84,8 +84,8 @@ kubectl apply -f base/namespace
 #
 # OTel Collector (앞단)
 #
-kubectl apply -f base/observability/collector/producer/serviceaccount.yaml || true
-kubectl apply -f base/observability/collector/producer/rbac.yaml || true
+# kubectl apply -f base/observability/collector/producer/serviceaccount.yaml || true
+# kubectl apply -f base/observability/collector/producer/rbac.yaml || true
 kubectl apply -f base/observability/collector/producer/otel-collector.yaml || true
 
 #
@@ -123,7 +123,8 @@ kubectl apply -f base/observability/collector/producer/otel-collector.yaml || tr
 #   --namespace argocd \
 #   --create-namespace=false \
 #   --version 9.1.6 \
+#   --set configs.cm.timeout.reconciliation=30s \
 #   --wait --timeout 180s
 
-# ApplicationSet
+# # ApplicationSet
 # kustomize build overlays/prod/argocd/msa | kubectl apply -f - || true

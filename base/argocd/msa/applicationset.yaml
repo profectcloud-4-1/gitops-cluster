@@ -30,6 +30,7 @@ spec:
         path: chart/goorm-app
         helm:
           valueFiles:
+            - "values.yaml"
             - "{{valuesFile}}"
       destination:
         server: https://kubernetes.default.svc
