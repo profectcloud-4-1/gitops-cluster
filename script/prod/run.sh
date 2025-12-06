@@ -52,13 +52,13 @@ kubectl apply -f base/namespace
 #   -f overlays/prod/observability/backend/tempo/values.yaml
 
 # Loki
-# helm upgrade --install loki grafana/loki \
-#   --namespace observability \
-#   --create-namespace=false \
-#   --version 6.46.0 \
-#   --wait --timeout 180s \
-#   --atomic \
-#   -f overlays/prod/observability/backend/loki/values.yaml
+helm upgrade --install loki grafana/loki \
+  --namespace observability \
+  --create-namespace=false \
+  --version 6.46.0 \
+  --wait --timeout 180s \
+  --atomic \
+  -f overlays/prod/observability/backend/loki/values.yaml
 
 # Mimir
 # kustomize build overlays/prod/observability/backend | kubectl apply -f - || true
@@ -86,7 +86,7 @@ kubectl apply -f base/namespace
 #
 # kubectl apply -f base/observability/collector/producer/serviceaccount.yaml || true
 # kubectl apply -f base/observability/collector/producer/rbac.yaml || true
-kubectl apply -f base/observability/collector/producer/otel-collector.yaml || true
+# kubectl apply -f base/observability/collector/producer/otel-collector.yaml || true
 
 #
 # Ingress

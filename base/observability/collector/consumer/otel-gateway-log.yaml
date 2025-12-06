@@ -42,7 +42,7 @@ spec:
 
     exporters:
       otlphttp/loki:
-        logs_endpoint: "http://loki:3100/loki/api/v1/push"
+        logs_endpoint: "http://loki:3100/otlp/v1/logs"
         tls:
           insecure: true
         headers:
