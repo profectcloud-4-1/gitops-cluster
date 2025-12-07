@@ -66,13 +66,13 @@ kustomize build overlays/prod/observability/sa | kubectl apply -f - || true
 #
 # Grafana
 #
-helm upgrade --install grafana grafana/grafana \
-  --namespace observability \
-  --create-namespace=false \
-  --version 10.3.0 \
-  --wait --timeout 180s \
-  --atomic \
-  -f overlays/prod/observability/grafana/values.yaml
+# helm upgrade --install grafana grafana/grafana \
+#   --namespace observability \
+#   --create-namespace=false \
+#   --version 10.3.0 \
+#   --wait --timeout 180s \
+#   --atomic \
+#   -f overlays/prod/observability/grafana/values.yaml
 
 #
 # OTel Collector (뒷단)
