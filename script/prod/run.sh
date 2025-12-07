@@ -33,6 +33,11 @@ kubectl apply -f base/namespace
 #   --set admissionWebhooks.autoGenerateCert.enabled=true \
 #   --wait --timeout=180s
 
+# NOTE: 해당 CRD의 cert-manager.io/inject-ca-from 어노테이션에 namespace/secret-name 형식의 값이 들어가야 하는데, operator는 'none'이라고 적어놨음. 이거땜에 cert-manager가 터져서 operator crd의 해당 어노테이션 값을 제거함.
+kubectl patch crd opentelemetrycollectors.opentelemetry.io \
+  --type=json \
+  -p '[{"op": "remove", "path": "/metadata/annotations/cert-manager.io~1inject-ca-from"}]'
+
 #
 # Telemetry Backend
 #
@@ -77,8 +82,8 @@ kustomize build overlays/prod/observability/sa | kubectl apply -f - || true
 #
 # OTel Collector (뒷단)
 #
-# kustomize build overlays/prod/observability/collector/secret | kubectl apply -f - || true
-# kustomize build overlays/prod/observability/collector/consumer | kubectl apply -f - || true
+kustomize build overlays/prod/observability/collector/secret | kubectl apply -f - || true
+kustomize build overlays/prod/observability/collector/consumer | kubectl apply -f - || true
 
 
 #
@@ -105,7 +110,7 @@ kustomize build overlays/prod/observability/sa | kubectl apply -f - || true
 # helm upgrade --install aws-load-balancer-controller eks/aws-load-balancer-controller \
 #   --namespace kube-system \
 #   --create-namespace=false \
-#   --version 1.16.0 \
+#   --version 1.14.1 \
 #   --wait --timeout 5m \
 #   --atomic \
 #   --set vpcId=$VPC_ID \

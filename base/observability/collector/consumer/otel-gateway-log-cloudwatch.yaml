@@ -1,0 +1,132 @@
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+
+metadata:
+  name: otel-collector-logs
+  namespace: observability
+
+spec:
+  mode: deployment
+  image: otel/opentelemetry-collector-contrib:0.112.0
+  replicas: 1
+
+  serviceAccount: goormdotcom-cloudwatch-log
+
+  envFrom:
+    - secretRef:
+        name: otel-collector-config
+
+  config:
+    receivers:
+      awscloudwatch/msk-logs:
+        region: "ap-northeast-2"
+        logs:
+          poll_interval: 10s
+          groups:
+            named:
+              "/aws/msk/goorm/cluster": {}
+
+      awscloudwatch/rds-order-logs:
+        region: "ap-northeast-2"
+        logs:
+          poll_interval: 10s
+          groups:
+            named:
+              "/aws/rds/instance/order/postgresql": {}
+
+      awscloudwatch/rds-user-logs:
+        region: "ap-northeast-2"
+        logs:
+          poll_interval: 10s
+          groups:
+            named:
+              "/aws/rds/instance/user/postgresql": {}
+
+      awscloudwatch/rds-payment-logs:
+        region: "ap-northeast-2"
+        logs:
+          poll_interval: 10s
+          groups:
+            named:
+              "/aws/rds/instance/payment/postgresql": {}
+
+      awscloudwatch/rds-product-logs:
+        region: "ap-northeast-2"
+        logs:
+          poll_interval: 10s
+          groups:
+            named:
+              "/aws/rds/instance/product/postgresql": {}
+
+    processors:
+      batch:
+        timeout: 1s
+        send_batch_size: 8192
+      attributes/add_msk_label:
+        actions:
+          - key: source
+            value: "awscloudwatchlogs-msk"
+            action: insert
+      attributes/add_rds_order_label:
+        actions:
+          - key: source
+            value: "awscloudwatchlogs-rds"
+            action: insert
+          - key: service_name
+            value: "order"
+            action: insert
+      attributes/add_rds_user_label:
+        actions:
+          - key: source
+            value: "awscloudwatchlogs-rds"
+            action: insert
+          - key: service_name
+            value: "user"
+            action: insert
+      attributes/add_rds_payment_label:
+        actions:
+          - key: source
+            value: "awscloudwatchlogs-rds"
+            action: insert
+          - key: service_name
+            value: "payment"
+            action: insert
+      attributes/add_rds_product_label:
+        actions:
+          - key: source
+            value: "awscloudwatchlogs-rds"
+            action: insert
+          - key: service_name
+            value: "product"
+            action: insert
+
+    exporters:
+      otlphttp/loki:
+        logs_endpoint: "http://loki:3100/otlp/v1/logs"
+        tls:
+          insecure: true
+        headers:
+          X-Scope-OrgID: "goormdotcom"
+
+    service:
+      pipelines:
+        logs/msk:
+          receivers: [awscloudwatch/msk-logs]
+          processors: [attributes/add_msk_label, batch]
+          exporters: [otlphttp/loki]
+        logs/order:
+          receivers: [awscloudwatch/rds-order-logs]
+          processors: [attributes/add_rds_order_label, batch]
+          exporters: [otlphttp/loki]
+        logs/user:
+          receivers: [awscloudwatch/rds-user-logs]
+          processors: [attributes/add_rds_user_label, batch]
+          exporters: [otlphttp/loki]
+        logs/payment:
+          receivers: [awscloudwatch/rds-payment-logs]
+          processors: [attributes/add_rds_payment_label, batch]
+          exporters: [otlphttp/loki]
+        logs/product:
+          receivers: [awscloudwatch/rds-product-logs]
+          processors: [attributes/add_rds_product_label, batch]
+          exporters: [otlphttp/loki]

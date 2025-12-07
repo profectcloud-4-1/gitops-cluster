@@ -5,3 +5,4 @@ resources:
   - otel-gateway-log.yaml
   - otel-gateway-metric.yaml
   - otel-gateway-trace.yaml
+  - otel-gateway-log-cloudwatch.yaml

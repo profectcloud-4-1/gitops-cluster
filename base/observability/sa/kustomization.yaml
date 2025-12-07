@@ -8,3 +8,4 @@ resources:
   - sa-metric.yaml
   - sa-trace.yaml
   - sa-grafana.yaml
+  - sa-log-cloudwatch.yaml
