@@ -14,6 +14,20 @@ kubectl apply -f base/namespace
 #   --wait --timeout 180s \
 #   --atomic
 
+#
+# Metrics Server
+#
+# helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
+# helm repo update
+
+# helm upgrade --install metrics-server metrics-server/metrics-server \
+#   --version 3.13.0 \
+#   --namespace kube-system \
+#   --create-namespace=false \
+#   --wait --timeout 180s \
+#   --atomic \
+#   -f base/metrics-server/values.yaml
+
 # 
 # ESO
 #
