@@ -4,3 +4,11 @@ region: "ap-northeast-2"
 serviceAccount:
   create: false
   name: "aws-load-balancer-controller"
+
+# system nodepool에 배포
+nodeSelector:
+  "karpenter.sh/nodepool": "system"
+
+tolerations:
+  - key: "CriticalAddonsOnly"
+    operator: "Exists"

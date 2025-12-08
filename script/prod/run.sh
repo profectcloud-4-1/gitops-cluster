@@ -138,7 +138,7 @@ kubectl apply -f base/namespace
 #   --namespace argocd \
 #   --create-namespace=false \
 #   --version 9.1.6 \
-#   --set configs.cm.timeout.reconciliation=30s \
+#   -f base/argocd/values.yaml \
 #   --wait --timeout 180s
 
 # # ApplicationSet

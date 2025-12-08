@@ -1,0 +1,12 @@
+global:
+  # system nodepool에 배포
+  nodeSelector:
+    "karpenter.sh/nodepool": "system"
+
+  tolerations:
+    - key: "CriticalAddonsOnly"
+      operator: "Exists"
+
+configs:
+  cm:
+    timeout.reconciliation: 30s
