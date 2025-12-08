@@ -20,8 +20,7 @@ compactor:
 tempo:
   metricsGenerator:
     enabled: false
-  retention:
-    traces: 48h # 2일 후 삭제
+  retention: 48h # 2일 후 삭제
   storage:
     trace:
       backend: s3

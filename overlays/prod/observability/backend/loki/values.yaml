@@ -4,6 +4,10 @@ serviceAccount:
 
 deploymentMode: SingleBinary
 
+global:
+  extraArgs:
+    - "-log.level=warn"
+
 singleBinary:
   replicas: 1
   persistence:
