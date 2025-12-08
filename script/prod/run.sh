@@ -2,6 +2,17 @@
 
 kubectl apply -f base/namespace
 
+#
+# Cert Manager
+#
+# helm upgrade --install cert-manager \
+#   oci://quay.io/jetstack/charts/cert-manager \
+#   --version v1.19.1 \
+#   --namespace cert-manager \
+#   --create-namespace=false \
+#   -f base/cert-manager/values.yaml \
+#   --wait --timeout 180s \
+#   --atomic
 
 # 
 # ESO
@@ -34,16 +45,16 @@ kubectl apply -f base/namespace
 #   --wait --timeout=180s
 
 # NOTE: 해당 CRD의 cert-manager.io/inject-ca-from 어노테이션에 namespace/secret-name 형식의 값이 들어가야 하는데, operator는 'none'이라고 적어놨음. 이거땜에 cert-manager가 터져서 operator crd의 해당 어노테이션 값을 제거함.
-kubectl patch crd opentelemetrycollectors.opentelemetry.io \
-  --type=json \
-  -p '[{"op": "remove", "path": "/metadata/annotations/cert-manager.io~1inject-ca-from"}]'
+# kubectl patch crd opentelemetrycollectors.opentelemetry.io \
+#   --type=json \
+#   -p '[{"op": "remove", "path": "/metadata/annotations/cert-manager.io~1inject-ca-from"}]'
 
 #
 # Telemetry Backend
 #
 
 # SA
-kustomize build overlays/prod/observability/sa | kubectl apply -f - || true
+# kustomize build overlays/prod/observability/sa | kubectl apply -f - || true
 
 # Tempo
 # helm repo add grafana https://grafana.github.io/helm-charts
@@ -82,8 +93,8 @@ kustomize build overlays/prod/observability/sa | kubectl apply -f - || true
 #
 # OTel Collector (뒷단)
 #
-kustomize build overlays/prod/observability/collector/secret | kubectl apply -f - || true
-kustomize build overlays/prod/observability/collector/consumer | kubectl apply -f - || true
+# kustomize build overlays/prod/observability/collector/secret | kubectl apply -f - || true
+# kustomize build overlays/prod/observability/collector/consumer | kubectl apply -f - || true
 
 
 #

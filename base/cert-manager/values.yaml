@@ -1,0 +1,26 @@
+crds:
+  enabled: true
+
+nodeSelector:
+  kubernetes.io/os: linux
+  karpenter.sh/nodepool: system
+
+tolerations:
+  - key: "CriticalAddonsOnly"
+    operator: "Exists"
+
+cainjector:
+  nodeSelector:
+    "karpenter.sh/nodepool": "system"
+
+  tolerations:
+    - key: "CriticalAddonsOnly"
+      operator: "Exists"
+
+webhook:
+  nodeSelector:
+    "karpenter.sh/nodepool": "system"
+
+  tolerations:
+    - key: "CriticalAddonsOnly"
+      operator: "Exists"
