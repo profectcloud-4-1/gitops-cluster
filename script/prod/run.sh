@@ -26,9 +26,7 @@ kubectl apply -f base/namespace
 #   --namespace external-secrets \
 #   --version 1.1.0 \
 #   --atomic \
-#   --set serviceAccount.create=false \
-#   --set serviceAccount.name=external-secrets-operator \
-#   --set installCRDs=true \
+#   -f base/secret/eso/values.yaml \
 #   --wait --timeout=180s --debug
 
 # kustomize build overlays/prod/secret | kubectl apply -f -
@@ -39,12 +37,13 @@ kubectl apply -f base/namespace
 # helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
 # helm upgrade --install otel-operator open-telemetry/opentelemetry-operator \
 #   --namespace observability \
-#   --set "manager.collectorImage.repository=otel/opentelemetry-collector-k8s" \
-#   --set admissionWebhooks.certManager.enabled=false \
-#   --set admissionWebhooks.autoGenerateCert.enabled=true \
+#   --create-namespace=false \
+#   --version 0.99.2 \
+#   -f base/observability/otel-operator/values.yaml \
+#   --atomic \
 #   --wait --timeout=180s
 
-# NOTE: 해당 CRD의 cert-manager.io/inject-ca-from 어노테이션에 namespace/secret-name 형식의 값이 들어가야 하는데, operator는 'none'이라고 적어놨음. 이거땜에 cert-manager가 터져서 operator crd의 해당 어노테이션 값을 제거함.
+# NOTE: operator 설치 시 함께 설치되는 'opentelemetrycollectors.opentelemetry.io' 라는 CRD의 'cert-manager.io/inject-ca-from' 어노테이션에 "namespace/secret-name" 형식의 값이 들어가야 하는데, operator는 'none'이라고 적어놨음. 이거땜에 cert-manager가 터져서 operator crd의 해당 어노테이션 값을 제거함.
 # kubectl patch crd opentelemetrycollectors.opentelemetry.io \
 #   --type=json \
 #   -p '[{"op": "remove", "path": "/metadata/annotations/cert-manager.io~1inject-ca-from"}]'
