@@ -12,6 +12,10 @@ spec:
     - secretRef:
         name: otel-collector-config
 
+  # observability nodepool에 배포
+  nodeSelector:
+    "workload": "observability"
+
   config:
     receivers:
       kafka/logs:

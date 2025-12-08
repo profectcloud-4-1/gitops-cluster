@@ -14,6 +14,8 @@ spec:
         app: mimir
     spec:
       serviceAccountName: goormdotcom-metric
+      nodeSelector:
+        "workload": "observability"
       containers:
         - name: mimir
           image: grafana/mimir:2.14.0

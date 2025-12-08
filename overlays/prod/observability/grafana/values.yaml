@@ -2,6 +2,10 @@ fullnameOverride: grafana
 
 adminPassword: "1234"
 
+# observability nodepool에 배포
+nodeSelector:
+  "workload": "observability"
+
 serviceAccount:
   create: false
   name: goormdotcom-grafana

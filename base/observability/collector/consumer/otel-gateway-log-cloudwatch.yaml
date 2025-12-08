@@ -12,6 +12,10 @@ spec:
 
   serviceAccount: goormdotcom-cloudwatch-log
 
+  # observability nodepool에 배포
+  nodeSelector:
+    "workload": "observability"
+
   envFrom:
     - secretRef:
         name: otel-collector-config

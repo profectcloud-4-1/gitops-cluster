@@ -10,6 +10,11 @@ global:
 
 singleBinary:
   replicas: 1
+
+  # observability nodepool에 배포
+  nodeSelector:
+    "workload": "observability"
+
   persistence:
     enabled: false
 
@@ -20,6 +25,11 @@ singleBinary:
   extraVolumes:
     - name: loki-storage
       emptyDir: {}
+
+lokiCanary:
+  # observability nodepool에 배포
+  nodeSelector:
+    "workload": "observability"
 
 minio:
   enabled: false
