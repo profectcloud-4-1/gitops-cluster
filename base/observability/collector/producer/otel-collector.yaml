@@ -10,6 +10,7 @@ spec:
   serviceAccount: otel-collector-producer
 
   hostNetwork: true
+  dnsPolicy: ClusterFirstWithHostNet
 
   envFrom:
     - secretRef:
@@ -123,6 +124,26 @@ spec:
             action: upsert
             value: "${env:K8S_NODE_NAME}"
 
+      k8sattributes:
+        auth_type: serviceAccount
+        filter:
+          node_from_env_var: K8S_NODE_NAME
+        extract:
+          metadata:
+            - k8s.namespace.name
+            - k8s.pod.name
+            - k8s.pod.uid
+            - k8s.container.name
+            - k8s.node.name
+
+      transform/labels:
+        metric_statements:
+          - context: datapoint
+            statements:
+              - set(attributes["k8s_pod_name"], resource.attributes["k8s.pod.name"])
+              - set(attributes["k8s_namespace_name"], resource.attributes["k8s.namespace.name"])
+              - set(attributes["k8s_container_name"], resource.attributes["k8s.container.name"])
+
       # 헬스체크 트레이스 제외
       filter/trace-healthcheck:
         traces:
@@ -176,24 +197,28 @@ spec:
       pipelines:
         logs:
           receivers: [otlp]
-          processors: [memory_limiter, attributes/node, batch]
-          exporters: [kafka/logs, debug]
+          processors: [memory_limiter, k8sattributes, batch]
+          exporters: [kafka/logs]
 
         metrics:
-          receivers: [otlp, kubeletstats, hostmetrics, prometheus/ksm]
-          processors: [memory_limiter, attributes/node, batch]
+          receivers: [otlp, hostmetrics, prometheus/ksm]
+          processors: [memory_limiter, k8sattributes, transform/labels, batch]
           exporters: [kafka/metrics]
+
+        metrics/kubeletstats:
+          receivers: [kubeletstats]
+          processors: [memory_limiter, k8sattributes, transform/labels, batch]
+          exporters: [kafka/metrics, debug]
 
         traces:
           receivers: [otlp]
-          processors:
-            [
+          processors: [
               memory_limiter,
               filter/trace-healthcheck,
               filter/trace-db-healthcheck,
-              attributes/node,
-              groupbytrace,
-              tail_sampling,
+              k8sattributes,
+              # groupbytrace,
+              # tail_sampling,
               batch,
             ]
-          exporters: [kafka/traces, debug]
+          exporters: [kafka/traces]

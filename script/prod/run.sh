@@ -70,15 +70,15 @@ kubectl apply -f base/namespace
 # kustomize build overlays/prod/observability/sa | kubectl apply -f - || true
 
 # Tempo
-helm repo add grafana https://grafana.github.io/helm-charts
-helm repo update
-helm upgrade --install tempo grafana/tempo \
-  --namespace observability \
-  --create-namespace=false \
-  --version 1.10.0 \
-  --wait --timeout 180s \
-  --atomic \
-  -f overlays/prod/observability/backend/tempo/values.yaml
+# helm repo add grafana https://grafana.github.io/helm-charts
+# helm repo update
+# helm upgrade --install tempo grafana/tempo \
+#   --namespace observability \
+#   --create-namespace=false \
+#   --version 1.10.0 \
+#   --wait --timeout 180s \
+#   --atomic \
+#   -f overlays/prod/observability/backend/tempo/values.yaml
 
 # Loki
 # helm upgrade --install loki grafana/loki \
@@ -115,7 +115,7 @@ helm upgrade --install tempo grafana/tempo \
 #
 # kubectl apply -f base/observability/collector/producer/serviceaccount.yaml || true
 # kubectl apply -f base/observability/collector/producer/rbac.yaml || true
-# kubectl apply -f base/observability/collector/producer/otel-collector.yaml || true
+kubectl apply -f base/observability/collector/producer/otel-collector.yaml || true
 
 #
 # Ingress
