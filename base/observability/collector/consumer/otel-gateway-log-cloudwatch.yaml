@@ -62,11 +62,14 @@ spec:
       batch:
         timeout: 1s
         send_batch_size: 8192
-      attributes/add_msk_label:
+      attributes/add_msk_resource:
         actions:
-          - key: source
-            value: "awscloudwatchlogs-msk"
-            action: insert
+          - action: insert
+            key: loki.resource.labels
+            value: source
+          - action: insert
+            key: source
+            value: "cloudwatchlogs-msk"
       attributes/add_rds_order_label:
         actions:
           - key: source
@@ -112,7 +115,7 @@ spec:
       pipelines:
         logs/msk:
           receivers: [awscloudwatch/msk-logs]
-          processors: [attributes/add_msk_label, batch]
+          processors: [attributes/add_msk_resource, batch]
           exporters: [otlphttp/loki]
         logs/order:
           receivers: [awscloudwatch/rds-order-logs]
