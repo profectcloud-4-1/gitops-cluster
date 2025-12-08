@@ -20,6 +20,19 @@ service:
 ingress:
   enabled: false
 
+resources:
+  requests:
+    cpu: 300m
+    memory: 1Gi
+  limits:
+    cpu: 2
+    memory: 2Gi
+
+grafana.ini:
+  log:
+    mode: console
+    level: warn
+
 datasources:
   datasources.yaml:
     apiVersion: 1
