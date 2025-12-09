@@ -12,7 +12,6 @@ spec:
     - secretRef:
         name: otel-collector-config
 
-  # observability nodepool에 배포
   nodeSelector:
     "workload": "observability"
 
@@ -33,6 +32,35 @@ spec:
             password: "${env:KAFKA_PASSWORD}"
 
     processors:
+      transform:
+        trace_statements:
+          - context: span
+            statements:
+              # parent_id 없는 root span에 강제로 속성 넣기 (정제)
+              - set(attributes["collector.gateway"], "true")
+              # 비어있는 service name guard
+              - set(resource.attributes["service.name"], "unknown-service") where resource.attributes["service.name"] == nil
+
+      tail_sampling:
+        decision_wait: 5s
+        num_traces: 5000
+        expected_new_traces_per_sec: 200
+        policies:
+          - name: error-policy
+            type: status_code
+            status_code:
+              status_codes: [ERROR]
+
+          - name: high-latency
+            type: latency
+            latency:
+              threshold_ms: 1000   # 1초 넘는 요청 모두 수집
+
+          - name: probabilistic-default
+            type: probabilistic
+            probabilistic:
+              sampling_percentage: 1
+
       batch:
         timeout: 1s
         send_batch_size: 8192
@@ -47,5 +75,5 @@ spec:
       pipelines:
         traces:
           receivers: [kafka/traces]
-          processors: [batch]
+          processors: [transform, tail_sampling, batch]
           exporters: [otlp/tempo]
