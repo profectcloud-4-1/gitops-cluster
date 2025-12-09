@@ -115,7 +115,8 @@ kubectl apply -f base/namespace
 #
 # kubectl apply -f base/observability/collector/producer/serviceaccount.yaml || true
 # kubectl apply -f base/observability/collector/producer/rbac.yaml || true
-kubectl apply -f base/observability/collector/producer/otel-collector.yaml || true
+# kubectl apply -f base/observability/collector/producer/otel-collector.yaml || true
+kubectl apply -f base/observability/collector/system || true
 
 #
 # Ingress

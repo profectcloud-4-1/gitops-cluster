@@ -81,14 +81,6 @@ spec:
           filesystem: {}
           network: {}
 
-      prometheus/ksm:
-        config:
-          scrape_configs:
-            - job_name: "kube-state-metrics"
-              static_configs:
-                - targets:
-                    - "kube-state-metrics.kube-system.svc:8080"
-
     processors:
       memory_limiter:
         check_interval: 5s
@@ -201,14 +193,9 @@ spec:
           exporters: [kafka/logs]
 
         metrics:
-          receivers: [otlp, hostmetrics, prometheus/ksm]
+          receivers: [otlp, hostmetrics]
           processors: [memory_limiter, k8sattributes, transform/labels, batch]
           exporters: [kafka/metrics]
-
-        metrics/kubeletstats:
-          receivers: [kubeletstats]
-          processors: [memory_limiter, k8sattributes, transform/labels, batch]
-          exporters: [kafka/metrics, debug]
 
         traces:
           receivers: [otlp]

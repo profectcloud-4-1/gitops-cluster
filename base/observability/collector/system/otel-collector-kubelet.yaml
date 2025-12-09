@@ -1,0 +1,108 @@
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: otel-collector-kubelet
+  namespace: observability
+spec:
+  mode: daemonset
+  image: otel/opentelemetry-collector-contrib:0.112.0
+
+  serviceAccount: otel-collector-producer
+
+  hostNetwork: true
+  dnsPolicy: ClusterFirstWithHostNet
+
+  env:
+    - name: K8S_NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
+
+  # # observability nodepool에 배포
+  # nodeSelector:
+  #   "workload": "observability"
+
+  resources:
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+  config:
+    receivers:
+      kubeletstats:
+        collection_interval: 10s
+        auth_type: serviceAccount
+        insecure_skip_verify: true
+        metric_groups:
+          - node
+          - pod
+          - container
+
+      prometheus/ds-collector:
+        config:
+          scrape_configs:
+            - job_name: "ds-collector"
+              scrape_interval: 10s
+              static_configs:
+                - targets: ["127.0.0.1:8888"]
+
+    processors:
+      memory_limiter:
+        check_interval: 5s
+        limit_percentage: 80
+        spike_limit_percentage: 25
+
+      batch:
+        timeout: 5s
+        send_batch_size: 1024
+
+      attributes/node:
+        actions:
+          - key: k8s.node.name
+            action: upsert
+            value: "${env:K8S_NODE_NAME}"
+
+      k8sattributes:
+        auth_type: serviceAccount
+        filter:
+          node_from_env_var: K8S_NODE_NAME
+        extract:
+          metadata:
+            - k8s.namespace.name
+            - k8s.pod.name
+            - k8s.pod.uid
+            - k8s.container.name
+            - k8s.node.name
+
+      transform/labels:
+        metric_statements:
+          - context: datapoint
+            statements:
+              - set(attributes["k8s_pod_name"], resource.attributes["k8s.pod.name"])
+              - set(attributes["k8s_namespace_name"], resource.attributes["k8s.namespace.name"])
+              - set(attributes["k8s_container_name"], resource.attributes["k8s.container.name"])
+    exporters:
+      otlphttp/mimir:
+        metrics_endpoint: "http://mimir:9009/otlp/v1/metrics"
+        tls:
+          insecure: true
+        headers:
+          X-Scope-OrgID: "goormdotcom"
+
+      debug:
+        verbosity: normal
+    service:
+      pipelines:
+        metrics/kubeletstats:
+          receivers: [kubeletstats]
+          processors: [memory_limiter, k8sattributes, transform/labels, batch]
+          exporters: [otlphttp/mimir]
+
+        metrics/ds-collector:
+          receivers: [prometheus/ds-collector]
+          processors: [memory_limiter, attributes/node, batch]
+          exporters: [otlphttp/mimir, debug]
+
+      telemetry:
+        metrics:
+          address: "0.0.0.0:9999"
