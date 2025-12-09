@@ -91,6 +91,10 @@ spec:
         timeout: 5s
         send_batch_size: 2048
 
+      batch/trace:
+        timeout: 1s
+        send_batch_size: 1
+
       groupbytrace:
         wait_duration: 10s
         num_traces: 10000
@@ -206,6 +210,6 @@ spec:
               k8sattributes,
               # groupbytrace,
               # tail_sampling,
-              batch,
+              # batch/trace,
             ]
           exporters: [kafka/traces]

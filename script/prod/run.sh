@@ -95,13 +95,13 @@ kubectl apply -f base/namespace
 #
 # Grafana
 #
-# helm upgrade --install grafana grafana/grafana \
-#   --namespace observability \
-#   --create-namespace=false \
-#   --version 10.3.0 \
-#   --wait --timeout 180s \
-#   --atomic \
-#   -f overlays/prod/observability/grafana/values.yaml
+helm upgrade --install grafana grafana/grafana \
+  --namespace observability \
+  --create-namespace=false \
+  --version 10.3.0 \
+  --wait --timeout 180s \
+  --atomic \
+  -f overlays/prod/observability/grafana/values.yaml
 
 #
 # OTel Collector (뒷단)
@@ -116,7 +116,7 @@ kubectl apply -f base/namespace
 # kubectl apply -f base/observability/collector/producer/serviceaccount.yaml || true
 # kubectl apply -f base/observability/collector/producer/rbac.yaml || true
 # kubectl apply -f base/observability/collector/producer/otel-collector.yaml || true
-kubectl apply -f base/observability/collector/system || true
+# kubectl apply -f base/observability/collector/system || true
 
 #
 # Ingress
