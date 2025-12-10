@@ -65,7 +65,7 @@ spec:
     processors:
       batch:
         timeout: 1s
-        send_batch_size: 8192
+        send_batch_size: 1024
       attributes/add_msk_resource:
         actions:
           - action: insert
@@ -114,6 +114,15 @@ spec:
           insecure: true
         headers:
           X-Scope-OrgID: "goormdotcom"
+        sending_queue:
+          enabled: true      
+          num_consumers: 10
+          queue_size: 1500
+        retry_on_failure:
+          enabled: true
+          initial_interval: 5s
+          max_interval: 30s
+          max_elapsed_time: 300s
 
     service:
       pipelines:
