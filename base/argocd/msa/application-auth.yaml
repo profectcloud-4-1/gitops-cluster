@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: auth-gateway
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/profectcloud-4-1/gitops-app.git
+    targetRevision: main
+    path: chart/goorm-app
+    helm:
+      valueFiles:
+        - "values.yaml"
+        - "../../app/auth/values.yaml"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: goormdotcom-prod
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false
+      - ApplyOutOfSyncOnly=true

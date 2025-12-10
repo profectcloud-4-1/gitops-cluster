@@ -95,13 +95,13 @@ kubectl apply -f base/namespace
 #
 # Grafana
 #
-helm upgrade --install grafana grafana/grafana \
-  --namespace observability \
-  --create-namespace=false \
-  --version 10.3.0 \
-  --wait --timeout 180s \
-  --atomic \
-  -f overlays/prod/observability/grafana/values.yaml
+# helm upgrade --install grafana grafana/grafana \
+#   --namespace observability \
+#   --create-namespace=false \
+#   --version 10.3.0 \
+#   --wait --timeout 180s \
+#   --atomic \
+#   -f overlays/prod/observability/grafana/values.yaml
 
 #
 # OTel Collector (뒷단)
@@ -158,3 +158,17 @@ helm upgrade --install grafana grafana/grafana \
 
 # # ApplicationSet
 # kustomize build overlays/prod/argocd/msa | kubectl apply -f - || true
+# kubectl apply -f base/argocd/msa/application-auth.yaml
+
+#
+# Stakater Reloader
+#
+# helm repo add stakater https://stakater.github.io/stakater-charts
+# helm repo update
+# helm upgrade --install reloader stakater/reloader \
+#   --namespace reloader \
+#   --create-namespace=false \
+#   --version 2.2.5 \
+#   --wait --timeout 180s \
+#   --atomic \
+#   -f base/reloader/values.yaml

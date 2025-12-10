@@ -1,0 +1,11 @@
+reloader:
+  logLevel: warning
+
+  deployment:
+    # system nodepool에 배포
+    nodeSelector:
+      "karpenter.sh/nodepool": "system"
+
+    tolerations:
+      - key: "CriticalAddonsOnly"
+        operator: "Exists"
